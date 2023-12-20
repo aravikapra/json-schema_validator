@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JSON Validation</title>
+    <style>
+      /* Tambahkan gaya CSS untuk mengatur warna latar belakang */
+      #container {
+        display: flex;
+      }
+      #leftContainer {
+        flex: 1;
+        padding: 10px;
+      }
+      #rightContainer {
+        flex: 1;
+        padding: 10px;
+      }
+      .success {
+        background-color: green;
+        color: white;
+      }
+      .error {
+        background-color: red;
+        color: white;
+      }
+      /* Tambahkan gaya CSS untuk menampilkan JSON schema */
+      #schemaContainer {
+        padding: 10px;
+        border: 1px solid #ccc;
+        max-width: 600px;
+        overflow: auto;
+        margin-top: 20px; /* Beri margin atas untuk memisahkan dari formulir */
+      }
+    </style>
+  </head>
+  <body>
+    <h1>JSON Validator Engine</h1>
+    <div id="container">
+      <!-- Formulir JSON -->
+      <div id="leftContainer">
+        <form action="/merchant/validateAndSave" method="POST" id="jsonForm">
+          <label for="urlPath">URL Path:</label>
+          <input
+            type="text"
+            name="url_path"
+            id="urlPath"
+            placeholder="Enter URL Path"
+            style="margin-bottom: 10px"
+          />
+          <br />
+          <label for="jsonData">JSON Data:</label>
+          <textarea
+            name="jsonData"
+            id="jsonData"
+            rows="10"
+            cols="75"
+            placeholder="Enter JSON string"
+          ></textarea>
+          <label for="jsonSchema">JSON Schema:</label>
+          <textarea
+            name="jsonSchema"
+            id="jsonSchema"
+            rows="10"
+            style="margin-top: 10px"
+            cols="75"
+            placeholder="Enter JSON Schema"
+          ></textarea>
+          <br />
+          <button
+            style="margin: 20px; padding: 10px"
+            type="button"
+            onclick="validateJSON()"
+          >
+            Validate JSON
+          </button>
+          <button
+            style="margin: 20px; padding: 10px"
+            type="button"
+            onclick="clearForm()"
+          >
+            CLEAR
+          </button>
+        </form>
+
+        <!-- Container untuk menampilkan JSON schema -->
+        <div id="schemaContainer">
+          <h2>JSON Schema yang Tersedia Di Simulasi Ini :</h2>
+          <pre id="schema"></pre>
+        </div>
+      </div>
+
+      <!-- Container untuk menampilkan hasil respons -->
+      <div id="rightContainer">
+        <div id="resultContainer">
+          <h2>Hasil Respons:</h2>
+          <pre id="result"></pre>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Fungsi untuk menampilkan JSON schema di halaman
+      function displaySchema() {
+        const schemaContainer = document.getElementById("schema");
+        schemaContainer.textContent = JSON.stringify(jsonSchema, null, 2);
+      }
+
+      // Panggil fungsi untuk menampilkan JSON schema saat halaman dimuat
+      window.onload = displaySchema;
+
+      // ... (sisa kode JavaScript Anda)
+      async function validateJSON() {
+        const urlPath = document.getElementById("urlPath").value;
+        const jsonData = document.getElementById("jsonData").value;
+        const jsonSchema = document.getElementById("jsonSchema").value;
+
+        try {
+          const response = await fetch("/merchant/validateAndSave", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              url_path: urlPath,
+              jsonData: jsonData,
+              jsonSchema: jsonSchema,
+            }),
+          });
+
+          const result = await response.json();
+
+          const resultContainer = document.getElementById("result");
+          resultContainer.textContent = result;
+
+          // Tambahkan logika untuk mengubah warna latar belakang
+          if (result.status === true) {
+            resultContainer.className = "success";
+          } else {
+            resultContainer.className = "error";
+          }
+          // Menampilkan JSON schema
+          const schemaContainer = document.getElementById("schema");
+          schemaContainer.textContent = jsonSchema;
+        } catch (error) {
+          console.error("Error:", error);
+        }
+      }
+      function clearForm() {
+        const urlPathInput = document.getElementById("urlPath");
+        const jsonDataInput = document.getElementById("jsonData");
+        const resultContainer = document.getElementById("result");
+        const schemaContainer = document.getElementById("schema");
+
+        urlPathInput.value = "";
+        jsonDataInput.value = "";
+        resultContainer.textContent = "";
+        resultContainer.className = ""; // Hapus kelas background
+        schemaContainer.textContent = ""; // Hapus JSON schema
+      }
+    </script>
+  </body>
+</html>
